@@ -13,9 +13,11 @@ from sklearn.ensemble import AdaBoostClassifier
 import matplotlib.pyplot as plt
 import time
 
+#import data files
 data1 = open_workbook('/Users/anush/Desktop/data1.xlsx').sheet_by_index(0)
 data0 = open_workbook('/Users/anush/Desktop/data0.xlsx').sheet_by_index(0)
 
+#append values to arrays
 g1 = []
 g0 = []
 for i in range(1,data1.nrows):
@@ -24,26 +26,36 @@ for i in range(1,data1.nrows):
 for i in range(1,data0.nrows):
 	tmp0 = np.array(data0.row_values(i)[1:81])
 	g0.append(tmp0)
-	
+
+#combine arrays across classes
 data = np.concatenate((g1,g0))
 x = np.array(data)
+#take z-scores 
 x = stats.zscore(x, axis=0)
+#create labels for data set (1/0)
 y = np.array(np.concatenate((np.ones(len(g1)),np.zeros(len(g0)))))
 
+#Least Angle Regression for optimal alpha selection
 model = LassoLarsCV(cv=20).fit(x, y)
 clf = Lasso(alpha=model.alpha_)
 clf.fit(x,y)
 
-print clf.coef_
+#print clf.coef_
 
+#Select features satisfying coefficient threshold
 sfm = SelectFromModel(clf, threshold=0.05)
 sfm.fit(x,y)
+#apply selected features to original data set 
 x = sfm.transform(x)
 
+#generate svm model for classification 
 clf = svm.SVC(kernel='rbf')
+
 #clf = KNeighborsClassifier(n_neighbors=5, algorithm='auto')
 #clf = RandomForestClassifier(n_estimators=100)
 #bdt = AdaBoostClassifier(clf, algorithm="SAMME", n_estimators=500)
+
+#stratified k-fold cross validation
 scores = cross_val_score(clf, x, y, cv=20)
 
 print scores.mean(), "+/-", scores.std()
