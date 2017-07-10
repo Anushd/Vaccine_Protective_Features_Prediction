@@ -37,88 +37,109 @@ x_0 = stats.zscore(x_0, axis=0)
 #create labels for data set (1/0)
 y_0 = np.array(np.concatenate((np.ones(len(g1)),np.zeros(len(g0)))))
 
+#svm scores for each outer fold
 scores=[]
 
+#outer folds
 nfold_outer=10
-
 kf1 = KFold(n_splits=nfold_outer)
 
+#count of outer fold
 count_3=0
+
+#array of selected features for each outer fold
 array1 = np.zeros((nfold_outer,80))
 
+#Count of folds which had greater than 0 features selected
 fold_count=0
 
 for train_index1, test_index1 in kf1.split(x_0):
 	
+	#partition data by outer k-fold
 	x1, x_test1 = x_0[train_index1], x_0[test_index1]
 	y1, y_test1 = y_0[train_index1], y_0[test_index1]
 	
 	#Least Angle Regression for optimal alpha selection
 	model = LassoLarsCV(cv=20).fit(x1, y1)
 	
+	#inner fold
 	nfold_inner = 10
+	
+	#array of selected features for each inner fold
 	features=np.zeros((nfold_inner,80))
+		
+	#count of inner fold
 	count1=0
+	
+	#inner k-fold
 	kf2 = KFold(n_splits=nfold_inner)
+	
+	#count of folds satisfying classification accuracy threshhold
 	thresh_count=0
+	
 	for train_index2, test_index2 in kf2.split(x1):
+		
+		#partition data by inner k-fold
 		x2, x_test2 = x1[train_index2], x1[test_index2]
 		y2, y_test2 = y1[train_index2], y1[test_index2]
-
+		
+		# lasso model
 		clf = Lasso(alpha=model.alpha_)
 		clf.fit(x2,y2)
 		
+		# select non-zero features from lasso and apply to data
 		sfm = SelectFromModel(clf, threshold=0.05)
 		sfm.fit(x2,y2)
 		x2 = sfm.transform(x2)
 		x_test2 = sfm.transform(x_test2)
+		
+		# svm model
 		clf2 = svm.SVC(kernel='rbf')
 		clf2.fit(x2,y2)
+		
+		# svm score
 		pred = clf2.predict(x_test2)
 		score = accuracy_score(y_test2, pred)
 		#print score
 		
-		if score>=0.75:
+		# include only selected features that satisfy svm score threshold (50% accuracy)
+		if score>=0.5:
 			thresh_count+=1
 			count2=0
 			for i in clf.coef_:
 				if abs(i)>0:
 					features[count1,count2]=1
 				count2+=1
-			count1+=1
-		
+		count1+=1
+	
+	#array of features selected from inner cv	
 	features_select=[]
+	
 	for i in range(80):
 		feature_count=0
+		
+		# count number of times each feature selected across all inner folds
 		for j in range(nfold_inner):
 			if features[j,i]>0:
 				feature_count+=1
 		
+		# select feature if number of times selected satisfies threshhold (60% of thresh_count)
 		if feature_count>thresh_count*0.6:
 			features_select.append(i)
+	
+	# apply selected features to outer fold data
 	x1 = x1[:,features_select]
 	x_test1 = x_test1[:,features_select]
 	
+	# add selected features to array1	
 	for i in features_select:
 		array1[count_3,i]=1
 	#print x1.shape
-	'''
-	#Select features satisfying coefficient threshold
-	sfm = SelectFromModel(clf, threshold=1e-50)
-	sfm.fit(x2,y2)
 	
-	#apply selected features to original data set 
-	x2 = sfm.transform(x2)
-	x_test2 = sfm.transform(x_test2)
-	'''
-	#generate svm model for classification 
-	#gamma_list = dict(gamma= [i*0.0001 for i in range(5, 1250, 5)])
-	#clf1 = GridSearchCV(estimator=SVC(), param_grid=gamma_list)
-	#clf1.fit(x1, y1)
+	# svm model
+	clf = svm.SVC(kernel='poly', degree=3)
 	
-	clf = svm.SVC(kernel='poly', degree=3)#, C=clf1.best_estimator_.C)
-	#clf = RandomForestClassifier(n_estimators=1)
-	
+	# calculate score for svm model only if >0 features selected by inner cv
 	if x1.shape[1]!=0:
 		fold_count += 1
 		clf.fit(x1,y1)
@@ -129,9 +150,12 @@ for train_index1, test_index1 in kf1.split(x_0):
 	count_3+=1
 
 print mean(scores)
-#print scores
+print scores
 
+#final features
 features_final=[]
+
+#include features selected >=7 times across outer folds
 for i in range(80):
 	feature_count=0
 	for j in range(nfold_outer):
@@ -141,21 +165,3 @@ for i in range(80):
 	if feature_count>=7:
 		features_final.append(i)
 print features_final
-
-	#clf = KNeighborsClassifier(n_neighbors=5, algorithm='auto')
-	#clf = RandomForestClassifier(n_estimators=100)
-	#bdt = AdaBoostClassifier(clf, algorithm="SAMME", n_estimators=500)
-
-	#stratified k-fold cross validation
-	#scores = cross_val_score(clf, x, y, cv=20)
-
-	#print scores.mean(), "+/-", scores.std()
-'''kf = KFold(n_splits=20)
-for train_index, test_index in kf.split(x):
-	x_train, x_test = x[train_index], x[test_index]
-	y_train, y_test = y[train_index], y[test_index]
-	clf.fit(x_train,y_train)
-	pred = clf.predict(x_test)	
-	print pred
-	print y_test
-	print'''
