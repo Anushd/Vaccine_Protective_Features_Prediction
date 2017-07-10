@@ -39,13 +39,13 @@ y_0 = np.array(np.concatenate((np.ones(len(g1)),np.zeros(len(g0)))))
 
 scores=[]
 
-kf1 = KFold(n_splits=40)
+kf1 = KFold(n_splits=20)
 for train_index1, test_index1 in kf1.split(x_0):
 	
 	x1, x_test1 = x_0[train_index1], x_0[test_index1]
 	y1, y_test1 = y_0[train_index1], y_0[test_index1]
 	
-	features_select = [19, 43, 48, 51, 55, 58, 61]
+	features_select = [2, 43, 55, 64]
 	
 	x1 = x1[:,features_select]
 	x_test1 = x_test1[:,features_select]
@@ -60,7 +60,7 @@ for train_index1, test_index1 in kf1.split(x_0):
 	score = accuracy_score(y_test1, y_pred)
 	scores.append(score) 
 
-print mean(scores)
+print mean(scores), '+/-', np.std(scores)
 
 	#clf = KNeighborsClassifier(n_neighbors=5, algorithm='auto')
 	#clf = RandomForestClassifier(n_estimators=100)
