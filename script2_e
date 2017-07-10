@@ -63,7 +63,7 @@ for train_index1, test_index1 in kf1.split(x_0):
 	model = LassoLarsCV(cv=20).fit(x1, y1)
 	
 	#inner fold
-	nfold_inner = 10
+	nfold_inner = 5
 	
 	#array of selected features for each inner fold
 	features=np.zeros((nfold_inner,80))
@@ -88,13 +88,13 @@ for train_index1, test_index1 in kf1.split(x_0):
 		clf.fit(x2,y2)
 		
 		# select non-zero features from lasso and apply to data
-		sfm = SelectFromModel(clf, threshold=0.05)
+		sfm = SelectFromModel(clf, threshold=0.0005)
 		sfm.fit(x2,y2)
 		x2 = sfm.transform(x2)
 		x_test2 = sfm.transform(x_test2)
 		
 		# svm model
-		clf2 = svm.SVC(kernel='rbf')
+		clf2 = svm.SVC(kernel='poly')
 		clf2.fit(x2,y2)
 		
 		# svm score
@@ -124,7 +124,7 @@ for train_index1, test_index1 in kf1.split(x_0):
 				feature_count+=1
 		
 		# select feature if number of times selected satisfies threshhold (60% of thresh_count)
-		if feature_count>thresh_count*0.6:
+		if feature_count>thresh_count*0.7:
 			features_select.append(i)
 	
 	# apply selected features to outer fold data
@@ -149,8 +149,8 @@ for train_index1, test_index1 in kf1.split(x_0):
 	
 	count_3+=1
 
-print mean(scores)
-print scores
+print mean(scores), '+/-', np.std(scores)
+#print scores
 
 #final features
 features_final=[]
@@ -162,6 +162,6 @@ for i in range(80):
 		if array1[j,i]>0:
 			feature_count+=1
 		
-	if feature_count>=7:
+	if feature_count>=6:
 		features_final.append(i)
 print features_final
