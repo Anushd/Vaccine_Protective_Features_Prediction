@@ -37,15 +37,15 @@ x_0 = stats.zscore(x_0, axis=0)
 #create labels for data set (1/0)
 y_0 = np.array(np.concatenate((np.ones(len(g1)),np.zeros(len(g0)))))
 
-accuracies=[]
+scores=[]
 
-kf1 = KFold(n_splits=20)
+kf1 = KFold(n_splits=40)
 for train_index1, test_index1 in kf1.split(x_0):
 	
 	x1, x_test1 = x_0[train_index1], x_0[test_index1]
 	y1, y_test1 = y_0[train_index1], y_0[test_index1]
 	
-	features_select = [19, 38, 46, 48, 51, 55, 58]
+	features_select = [19, 43, 48, 51, 55, 58, 61]
 	
 	x1 = x1[:,features_select]
 	x_test1 = x_test1[:,features_select]
@@ -54,12 +54,13 @@ for train_index1, test_index1 in kf1.split(x_0):
 	#gamma_list = dict(gamma= [i*0.0001 for i in range(5, 1250, 5)])
 	#clf1 = GridSearchCV(estimator=SVC(), param_grid=gamma_list)
 	#clf1.fit(x1, y1)
-	clf = svm.SVC(kernel='rbf')#, C=clf1.best_estimator_.C)
+	clf = svm.SVC(kernel='poly', degree=3)#, C=clf1.best_estimator_.C)
 	clf.fit(x1,y1)
 	y_pred = clf.predict(x_test1)
-	accuracy = accuracy_score(y_test1, y_pred)
-	accuracies.append(accuracy) 
-print mean(accuracies)
+	score = accuracy_score(y_test1, y_pred)
+	scores.append(score) 
+
+print mean(scores)
 
 	#clf = KNeighborsClassifier(n_neighbors=5, algorithm='auto')
 	#clf = RandomForestClassifier(n_estimators=100)
