@@ -9,7 +9,7 @@ reps= 100;
 cv_folds = 5;
 n_samples=46;
 
-tru_indices = [55,58,75];
+tru_indices = [20,55,56,58,75];
 
 scores_final = zeros(1,reps);
 tru_scores_final = zeros(1,reps);
@@ -29,7 +29,7 @@ for j=1:reps
         tr_dat = train_data(train,:);
         tr_lab = lab(train,:);
         [B, stats] = lasso(tr_dat,tr_lab, 'CV', 5);
-        betas = B(:,stats.IndexMinMSE)';
+        betas = B(:,stats.IndexMinMSE-5)';
         coefs(count,:) =  betas;
         
         features_index = find(betas);
