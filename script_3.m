@@ -5,7 +5,7 @@ train_data = data(:,2:81);
 lab = data(:,83);
 train_data = zscore(train_data);
 
-reps= 100;
+reps= 10;
 cv_folds = 5;
 n_samples=46;
 
@@ -56,14 +56,12 @@ for j=1:reps
         
         count = count+1;
     end
-    scores_final(1,j) = mean(scores_inner)
-    tru_scores_final(1,j) = mean(tru_scores_inner)
+    scores_final(1,j) = mean(scores_inner);
+    tru_scores_final(1,j) = mean(tru_scores_inner);
 end   
 
-mean = mean(scores_final)
-mean_true = mean(tru_scores_final)
-std_dev = std(scores_final)
-std_dev_true = std(scores_final)
+fprintf('%d +/- %d',mean(scores_final),std(scores_final));
+fprintf('%d +/- %d',mean(tru_scores_final),std(tru_scores_final));
 
 for i=1:80
 var_count=0;
@@ -72,7 +70,7 @@ var_count=0;
             var_count = var_count + 1;
         end;
     end;
-    if var_count>250
+    if var_count>25
         i
     end;
 end;
