@@ -5,7 +5,7 @@ train_data = data(:,2:81);
 lab = data(:,83);
 train_data = zscore(train_data);
 
-reps= 10;
+reps= 100;
 cv_folds = 5;
 n_samples=46;
 
@@ -40,14 +40,14 @@ for j=1:reps
         tru_ts_dat = ts_dat(:,tru_indices);
         
         if size(sel_tr_dat) ~= 0   
-            svm = fitcsvm(sel_tr_dat, tr_lab, 'BoxConstraint', 0.1);
+            svm = fitcsvm(sel_tr_dat, tr_lab, 'BoxConstraint', 0.5);
             optimise = hyperparameters('fitcsvm',sel_tr_dat,tr_lab);
             pred = predict(svm, sel_ts_dat);
             score = (pred==ts_lab); 
             score = sum(score)/size(score,1);
             scores_inner(1,i) = score;
         
-            tru_svm = fitcsvm(tru_tr_dat, tr_lab, 'BoxConstraint', 0.1);
+            tru_svm = fitcsvm(tru_tr_dat, tr_lab, 'BoxConstraint', 0.5);
             tru_pred = predict(tru_svm, tru_ts_dat);
             tru_score = (tru_pred==ts_lab);     
             tru_score = sum(tru_score)/size(tru_score,1); 
@@ -56,12 +56,14 @@ for j=1:reps
         
         count = count+1;
     end
-    scores_final(1,j) = mean(scores_inner);
-    tru_scores_final(1,j) = mean(tru_scores_inner);
+    scores_final(1,j) = mean(scores_inner)
+    tru_scores_final(1,j) = mean(tru_scores_inner)
 end   
 
-fprintf('%d +/- %d',mean(scores_final),std(scores_final));
-fprintf('%d +/- %d',mean(tru_scores_final),std(tru_scores_final));
+mean(scores_final)
+std(scores_final)
+mean(tru_scores_final)
+std(tru_scores_final)
 
 for i=1:80
 var_count=0;
@@ -70,7 +72,7 @@ var_count=0;
             var_count = var_count + 1;
         end;
     end;
-    if var_count>25
+    if var_count>250
         i
     end;
 end;
