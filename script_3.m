@@ -5,21 +5,21 @@ train_data = data(:,2:81);
 lab = data(:,83);
 train_data = zscore(train_data);
 
-reps= 10;
+reps= 100;
 cv_folds = 5;
 n_samples=46;
 
 %tru_indices = [55, 58, 75];
 
 scores_final = zeros(1,reps);
-tru_scores_final = zeros(1,reps);
+%tru_scores_final = zeros(1,reps);
 
 coefs = zeros(reps*cv_folds,80);
 count = 1;
 for j=1:reps
     indices = crossvalind('Kfold', n_samples, cv_folds);
     scores_inner = zeros(1,cv_folds);
-    tru_scores_inner = zeros(1,cv_folds);
+    %tru_scores_inner = zeros(1,cv_folds);
     
     for i=1:cv_folds
         test = (indices == i); 
@@ -42,8 +42,8 @@ for j=1:reps
         if size(sel_tr_dat) ~= 0
             svm = fitcsvm(sel_tr_dat, tr_lab);
             pred = predict(svm, sel_ts_dat);
-            score = (pred==ts_lab);
-            score = sum(score)/size(score,2);
+            score = (pred==ts_lab);       
+            score = sum(score)/size(score,1);
             scores_inner(1,i) = score;
          
         %tru_svm = fitcsvm(tru_tr_dat, tr_lab);
