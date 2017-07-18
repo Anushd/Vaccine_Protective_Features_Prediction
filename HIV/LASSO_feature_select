@@ -16,6 +16,9 @@ n_features = 345;
 classes = unique(lab);
 num_classes = length(classes);
 
+mse = [0,0,0,0,0];
+thresh = [25,25,25,25,25];
+
 coefs_1 = zeros(reps*cv_folds,n_features);
 coefs_2 = zeros(reps*cv_folds,n_features);
 coefs_3 = zeros(reps*cv_folds,n_features);
@@ -37,8 +40,8 @@ for j=1:reps
         
         for k=1:num_classes
             tr_lab_tmp = (tr_lab==k);
-            [B, stats] = lasso(tr_dat,tr_lab_tmp,'alpha',1e-50,'CV',5);
-            betas = B(:,stats.IndexMinMSE-2)';                          
+            [B, stats] = lasso(tr_dat,tr_lab_tmp,'CV',5, 'Standardize', false);
+            betas = B(:,stats.IndexMinMSE-mse(k))';                          
             coefs{k}(count,:) =  betas;                                  
         end     
         count = count+1;
@@ -46,8 +49,8 @@ for j=1:reps
 end
 
 for k=1:num_classes
-    'Class'
-    k
+    disp('Class')
+    disp(k)
     for i=1:n_features
     var_count=0;
         for j=1:reps*cv_folds
@@ -55,7 +58,7 @@ for k=1:num_classes
                 var_count = var_count + 1;
             end;
         end;
-        if var_count>48
+        if var_count>thresh(k)
             i
         end;
     end;  
