@@ -1,4 +1,4 @@
-%rng(100)
+rng(100)
 data1 = table2array(readtable('/Users/anush/documents/projects/ragon/HIV/data/Filtered_array_raw.txt'));
 data2 = table2array(readtable('/Users/anush/documents/projects/ragon/HIV/data/Filtered_functionalglycan_raw.txt'));
 
@@ -33,20 +33,21 @@ for j=1:reps
         tr_dat = train_data(train,:);
         tr_lab = lab(train,:);    
         
+        length_lab = length(ts_lab);
         tot_score = 0;
         
         %tr_lab has one class removed every iteration, tr_dat does not
-        groupB_indices = 1:length(tr_lab);       
+        groupB_indices = 1:length(tr_lab);                      
         for k=fliplr(2:n_classes)       
             tr_lab = tr_lab(groupB_indices);
             sel_tr_dat = tr_dat(groupB_indices,:);
 
             groupB_indices = find(tr_lab~=k);
-            
-            sel_tr_lab = zeros(size(tr_lab),1);           
+       
+            sel_tr_lab = zeros(size(tr_lab));           
             sel_tr_lab(groupB_indices) = 1;           
             
-            mdl = TreeBagger(100,sel_tr_dat,sel_tr_lab,'OOBPredictorImportance','on','MinLeafSize',5);
+            mdl = TreeBagger(300,sel_tr_dat,sel_tr_lab,'OOBPredictorImportance','on','MinLeafSize',5);
             
             pred = predict(mdl, ts_dat);
             pred = str2double(pred);
@@ -67,9 +68,8 @@ for j=1:reps
             end       
            
         end
-         
-        score = score/size(ts_lab,1);
-        tru_scores_inner(1,i) = score;        
+        tot_score = tot_score/length_lab
+        tru_scores_inner(1,i) = tot_score;        
         
         count = count+1;
     end
