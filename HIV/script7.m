@@ -54,7 +54,7 @@ for j=1:reps
         
         sel_tr_dat = tr_dat;
             
-        mdl = TreeBagger(100,sel_tr_dat,sel_tr_lab,'OOBPredictorImportance','on','MinLeafSize',5);
+        mdl = TreeBagger(100,sel_tr_dat,sel_tr_lab,'OOBPredictorImportance','on','MinLeafSize',3);
         mdl_a = TreeBagger(100,sel_tr_dat_a,sel_tr_lab_a,'OOBPredictorImportance','on','MinLeafSize',3);
         mdl_b = TreeBagger(100,sel_tr_dat_b,sel_tr_lab_b,'OOBPredictorImportance','on','MinLeafSize',3);
     
